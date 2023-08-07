@@ -1,3 +1,150 @@
+class Noble{
+
+    friend ostream& operator << (ostream& os, const Noble& rhs){
+        //os stream that will call the Warrior os stream
+        os << rhs.N_name << " has an army of " << rhs.army.size() << endl;
+        for(size_t idx = 0; idx < rhs.army.size(); idx++){
+            const Warrior* warr = rhs.army[idx];
+            os << *warr;
+        }
+        return os;
+    }
+
+public:
+    Noble(const string& inp_name):
+    N_name(inp_name), N_strength(0), N_live(true){}
+    const string& get_name() const{
+        return N_name;
+    }
+    double get_strength() const{
+        return N_strength;
+    }
+    bool alive() const{
+        return N_live;
+    }
+
+    static bool checkNameConflict(const string& name, const vector<Noble*>& nobles) {
+        for (const auto& noble : nobles) {
+            if (noble->get_name() == name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool hire(Warrior& warrior){
+        //check if the warrior is not hired and the noble is not dead, hire the warrior
+        if(!warrior.hired() && this->alive()) {
+                warrior.set_hire();
+                army.push_back(&warrior);
+                N_strength += warrior.get_strength();
+                return true;
+        }
+        return false;
+    }
+
+    void trainWarrior(const string& warriorName) {
+        for(Warrior* warrior : army) {
+            if(warrior->get_name() == warriorName) {
+                warrior->set_strength(warrior->get_strength() * 1.1);
+                cout << "The warrior " << warriorName << " has been trained and their strength is now " << warrior->get_strength() << "!" << endl;
+                return;
+            }
+        }
+        cout << "This noble doesn't have a warrior named " << warriorName << " in his army!" << endl;
+    }
+
+    bool fire(Warrior& used){
+        //check if the warrior is hired and the noble is not dead
+        if(used.hired() && this ->alive()){
+            size_t index = army.size();
+            for(size_t i = 0; i < army.size(); i++){
+                if(army[i]==&used){
+                    cout << "You don't work for me anymore " << used.get_name() << "! -- "
+                         << N_name << "." << endl;
+                    used.set_hire();
+                    N_strength -= used.get_strength();
+                    //delete used warrior
+                    index = i;
+                    break;
+                }
+            }
+            if (index == army.size()){
+                return false; // didn't find the warrior being fired
+            }
+            for(size_t i = index; i < army.size()-1; i++){
+                army[i] = army[i + 1];
+            }
+            army.pop_back();
+            return true;
+        }
+        return false;
+    }
+
+    void set_strength(double change){
+        //change the strength of the noble and warrior.
+        double ratio = 0;
+        //check if the noble will die
+        if (change < N_strength){
+            ratio = 1 - (change/N_strength);
+        } else {
+            //If the noble died
+            N_strength = 0;
+            N_live = false;
+        }
+        //Change the strenght of warriors
+        for (Warrior* warrior: army){
+            warrior->set_strength(ratio);
+        }
+    }
+
+    void battle(Noble& noble2){
+        double noble2_strength(noble2.get_strength());
+        cout << N_name << " battles " << noble2.get_name() << endl;
+        //both nobles are alive
+        if (N_live && noble2.alive()){
+            //strength of noble1 is stronger than noble2
+            if (N_strength > noble2_strength){
+                set_strength(noble2_strength);
+                noble2.set_strength(N_strength);
+                cout << "Result: " << N_name << " defeats " << noble2.get_name() << endl;
+            }
+                //strength of noble2 is stronger than noble2
+            else if (N_strength < noble2_strength){
+                noble2.set_strength(N_strength);
+                set_strength(noble2_strength);
+                cout << "Result: " << noble2.get_name() << " defeats " << N_name << endl;
+            }
+                //same strength
+            else {
+                noble2.set_strength(N_strength);
+                set_strength(noble2_strength);
+                cout << "Result: " << "Mutual Annihilation: " << N_name << " and "
+                     << noble2.get_name() << " die at each other's hands" << endl;
+            }
+        } else {
+            //check if noble1 is not dead
+            if (N_live) {
+                cout << "Result: " << "He's dead, " << N_name << endl;
+            }
+                //if noble2 is not dead
+            else if (noble2.alive()){
+                cout << "Result: " << "He's dead, " << noble2.get_name() << endl;
+            }
+                //both dead
+            else {
+                cout << "Result: " << "They're both dead!" << endl;
+            }
+        }
+    }
+
+private:
+    string N_name;
+    double N_strength;
+    bool N_live;
+    vector<Warrior*> army;
+};
+
 class Warrior{
 
     friend ostream& operator << (ostream& os, const Warrior& rhs){

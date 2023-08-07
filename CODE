@@ -195,3 +195,45 @@ private:
     bool W_hire;
     Noble* employer;
 };
+
+size_t N_idx(const vector<Noble*>& noble, const string& name){
+    //find the index of the noble in vector
+    for(size_t i = 0; i < noble.size(); i++){
+        if (noble[i]->get_name() == name){
+            return i;
+        }
+    }
+    return noble.size();
+}
+
+size_t W_index(const vector<Warrior*>& warriors, const string& name){
+    //find the index of the warrior in vector
+    for(size_t i = 0; i < warriors.size(); i++){
+        if (warriors[i]->get_name() == name){
+            return i;
+        }
+    }
+    return warriors.size();
+}
+
+void N_add(vector<Noble*>& nobles, const string& name){
+    //add new noble
+    if (Noble::checkNameConflict(name, nobles)) {
+        //check if the noble already exist
+        cerr << "The noble cannot be added - name conflict!\n";
+    } else {
+        nobles.emplace_back(new Noble(name));
+        cout << "Noble " << name << " created.\n";
+    }
+}
+
+
+void W_add(vector<Warrior*>& warriors, const string& name, int strength){
+    //add new warrior
+    if (!Warrior::checkNameConflict(name, warriors)) {
+        warriors.emplace_back(new Warrior(name, strength));
+        cout << "Warrior " + name + " Created"<< endl;
+    } else {
+        cerr << "The warrior cannot be added - name conflict!\n";
+    }
+}

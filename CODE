@@ -1,1 +1,50 @@
+class Warrior{
 
+    friend ostream& operator << (ostream& os, const Warrior& rhs){
+        //os passed by noble class os
+        os << "       "<< rhs.W_name << ": " << rhs.W_strength << endl;
+        return os;
+    }
+
+public:
+    Warrior(const string& inp_name, double inp_strength):
+    W_name(inp_name), W_strength(inp_strength), W_hire(false){}
+    const string& get_name() const {
+        return W_name;
+    }
+    double get_strength() const{
+        return W_strength;
+    }
+    bool hired() const {
+        return W_hire;
+    }
+    void set_hire(){
+        //Change the hire status of warrior
+        W_hire = !W_hire;
+    }
+    void set_strength(double ratio){
+        //Change the warrior's strength by ratio
+        W_strength *= ratio;
+    }
+    void setEmployer(Noble* employer) {
+        this->employer = employer;
+    }
+
+    Noble* getEmployer() const {
+        return employer;
+    }
+    static bool checkNameConflict(const string& name, const vector<Warrior*>& warriors) {
+        for (const auto& warrior : warriors) {
+            if (warrior->get_name() == name) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+private:
+    string W_name;
+    double W_strength;
+    bool W_hire;
+    Noble* employer;
+};

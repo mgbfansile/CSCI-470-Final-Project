@@ -1,8 +1,192 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Warrior;
+class Noble;
+void N_add(vector<Noble*>& nobles, const string& name);
+void W_add(vector<Warrior*>& warriors, const string& name, int strength);
+bool W_hire(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& n_name, const string& w_name);
+bool W_fire(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& n_name, const string& w_name);
+void N_battle(vector<Noble*>& nobles, const string& name1, const string& name2);
+size_t N_idx(const vector<Noble*>& noble, const string& name);
+size_t W_index(const vector<Warrior*>& warriors, const string& name);
+void inspectWarrior(const vector<Warrior*>& warriors, const string& name);
+void inspectNoble(const vector<Noble*>& nobles, const string& name);
+void inspectAll(const vector<Noble*>& nobles, const vector<Warrior*>& warriors);
+void W_trainWarrior(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& trainerName, const string& traineeName,
+                    const int& increased_health);
+void N_trainWarrior(vector<Noble*>& nobles, const string& nobleName, const string& warriorName, const int& increased_health);
+void tradeWarrior(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& noble_name,
+                  const string& old_warrior_name, const string& new_warrior_name);
+void clear(vector<Noble*>& nobles, vector<Warrior*>& warriors);
+
+int main() {
+    vector<Warrior*> W_vec;
+    vector<Noble*> N_vec;
+
+
+    while (true){
+        cout << "=========================================="<<endl;
+        cout << "Enter a command: "<< endl;
+        cout <<"(Noble, Warrior, Hire, Fire, Battle, Trade, Train,"
+                " Inspect, InspectAll, Clear, Exit)"<< endl;
+        string command;
+        cin >> command;
+
+        if (command == "Noble") {
+            cout << "=========================================="<<endl;
+            cout << "Enter the name of the Noble: ";
+            string nobleName;
+            cin >> nobleName;
+            N_add(N_vec, nobleName);
+            cout << endl;
+        } else if (command == "Warrior") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the name and strength of the Warrior: ";
+            string warriorName;
+            int strength;
+            cin >> warriorName >> strength;
+            W_add(W_vec, warriorName, strength);
+        } else if (command == "Hire") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the names of the Noble and the Warrior to be hired: ";
+            string nobleName, warriorName;
+            cin >> nobleName >> warriorName;
+            W_hire(W_vec, N_vec, nobleName, warriorName);
+        } else if (command == "Fire") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the names of the Noble and the Warrior to be fired: ";
+            string nobleName, warriorName;
+            cin >> nobleName >> warriorName;
+            W_fire(W_vec, N_vec, nobleName, warriorName);
+        } else if (command == "Battle") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the names of the two Nobles who will battle: ";
+            string nobleName1, nobleName2;
+            cin >> nobleName1 >> nobleName2;
+            N_battle(N_vec, nobleName1, nobleName2);
+        } else if (command == "Inspect") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the type (Noble/Warrior) and name of the character to inspect: ";
+            string type, name;
+            cin >> type >> name;
+            if (type == "Warrior") {
+                inspectWarrior(W_vec, name);
+            } else if (type == "Noble") {
+                inspectNoble(N_vec, name);
+            } else {
+                cout << "==========================================" <<endl;
+                cout << "Invalid Inspect type!" << endl;
+            }
+        }
+        else if (command == "InspectAll"){
+            cout << "==========================================" <<endl;
+            inspectAll(N_vec,W_vec);
+        }
+        else if (command == "Train") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the name of the trainer and the trainee and the amount of health increased: ";
+            string trainerName, traineeName;
+            int increased_health;
+            cin >> trainerName >> traineeName >> increased_health;
+            if (N_idx(N_vec, trainerName) != N_vec.size()) {
+                N_trainWarrior(N_vec, trainerName, traineeName, increased_health);
+                increased_health = 0;
+            } else if (W_index(W_vec, trainerName) != W_vec.size()) {
+                W_trainWarrior(W_vec, N_vec, trainerName, traineeName,increased_health);
+            } else {
+                cout << "==========================================" <<endl;
+                cout << "Invalid train command!" << endl;
+            }
+        }
+        else if (command == "Trade") {
+            cout << "==========================================" <<endl;
+            cout << "Enter the name of the Noble, the old Warrior, and the new Warrior: ";
+            string nobleName, oldWarriorName, newWarriorName;
+            cin >> nobleName >> oldWarriorName >> newWarriorName;
+            tradeWarrior(W_vec, N_vec, nobleName, oldWarriorName, newWarriorName);
+        }
+
+        else if (command == "Clear") {
+            cout << "==========================================" <<endl;
+            clear(N_vec, W_vec);
+        }
+        else if (command == "Exit"){
+            break;
+        }
+        else {
+            cout << "==========================================" <<endl;
+            std::cout << "Invalid command!" << std::endl;
+            continue;
+        }
+    }
+
+    return 0;
+}
+
+class Warrior{
+
+    friend ostream& operator << (ostream& os, const Warrior& rhs){
+        //os passed by noble class os
+        os << "       "<< rhs.W_name << ": " << rhs.W_strength << endl;
+        return os;
+    }
+
+public:
+    Warrior(const string& inp_name, double inp_strength):
+    W_name(inp_name), W_strength(inp_strength), W_hire(false){}
+    const string& get_name() const {
+        return W_name;
+    }
+    double get_strength() const{
+        return W_strength;
+    }
+    bool hired() const {
+        return W_hire;
+    }
+    void set_hire(){
+        W_hire = !W_hire;
+    }
+    void set_strength(double ratio){
+        //Change the warrior's strength by ratio
+        W_strength *= ratio;
+    }
+    void setEmployer(Noble* employer) {
+        this->employer = employer;
+    }
+
+    Noble* getEmployer() const {
+        return employer;
+    }
+    static bool checkNameConflict(const string& name, const vector<Warrior*>& warriors) {
+        for (const auto& warrior : warriors) {
+            if (warrior->get_name() == name) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+private:
+    string W_name;
+    double W_strength;
+    bool W_hire;
+    Noble* employer;
+};
+
 class Noble{
 
     friend ostream& operator << (ostream& os, const Noble& rhs){
         //os stream that will call the Warrior os stream
         os << rhs.N_name << " has an army of " << rhs.army.size() << endl;
+        if (rhs.alive()){
+            os << "alive"<<endl;
+        }
+        else{
+            os << "dead"<<endl;
+        }
         for(size_t idx = 0; idx < rhs.army.size(); idx++){
             const Warrior* warr = rhs.army[idx];
             os << *warr;
@@ -36,6 +220,7 @@ public:
         //check if the warrior is not hired and the noble is not dead, hire the warrior
         if(!warrior.hired() && this->alive()) {
                 warrior.set_hire();
+                warrior.setEmployer(this);
                 army.push_back(&warrior);
                 N_strength += warrior.get_strength();
                 return true;
@@ -43,15 +228,20 @@ public:
         return false;
     }
 
-    void trainWarrior(const string& warriorName) {
-        for(Warrior* warrior : army) {
-            if(warrior->get_name() == warriorName) {
-                warrior->set_strength(warrior->get_strength() * 1.1);
-                cout << "The warrior " << warriorName << " has been trained and their strength is now " << warrior->get_strength() << "!" << endl;
-                return;
+    void trainWarrior(const string& warriorName, const int& health_added) {
+        //increase warrior's strength
+        if(this->alive()){
+            for(Warrior* warrior : army) {
+                if(warrior->get_name() == warriorName) {
+                    warrior->set_strength(health_added);
+                    cout << "The warrior " << warriorName << " has been trained and their strength is now " << warrior->get_strength() << "!" << endl;
+                    return;
+                }
             }
+            cerr << "This noble doesn't have a warrior named " << warriorName << " in his army!" << endl;}
+        else{
+            cerr << "The Noble is dead already" << endl;
         }
-        cout << "This noble doesn't have a warrior named " << warriorName << " in his army!" << endl;
     }
 
     bool fire(Warrior& used){
@@ -81,119 +271,64 @@ public:
         return false;
     }
 
-    void set_strength(double change){
-        //change the strength of the noble and warrior.
-        double ratio = 0;
-        //check if the noble will die
-        if (change < N_strength){
-            ratio = 1 - (change/N_strength);
-        } else {
-            //If the noble died
-            N_strength = 0;
-            N_live = false;
-        }
-        //Change the strenght of warriors
-        for (Warrior* warrior: army){
-            warrior->set_strength(ratio);
-        }
-    }
 
     void battle(Noble& noble2){
-        double noble2_strength(noble2.get_strength());
         cout << N_name << " battles " << noble2.get_name() << endl;
-        //both nobles are alive
+
+        // Calculate total health
+        double total_health1 = calculateTotalHealth();
+        double total_health2 = noble2.calculateTotalHealth();
+
         if (N_live && noble2.alive()){
-            //strength of noble1 is stronger than noble2
-            if (N_strength > noble2_strength){
-                set_strength(noble2_strength);
-                noble2.set_strength(N_strength);
+            if (total_health1 > total_health2){
+                noble2.defeat();
                 cout << "Result: " << N_name << " defeats " << noble2.get_name() << endl;
             }
-                //strength of noble2 is stronger than noble2
-            else if (N_strength < noble2_strength){
-                noble2.set_strength(N_strength);
-                set_strength(noble2_strength);
+            else if (total_health1 < total_health2){
+                defeat();
                 cout << "Result: " << noble2.get_name() << " defeats " << N_name << endl;
             }
-                //same strength
             else {
-                noble2.set_strength(N_strength);
-                set_strength(noble2_strength);
+                defeat();
+                noble2.defeat();
                 cout << "Result: " << "Mutual Annihilation: " << N_name << " and "
                      << noble2.get_name() << " die at each other's hands" << endl;
             }
-        } else {
-            //check if noble1 is not dead
+        }
+        else {
             if (N_live) {
                 cout << "Result: " << "He's dead, " << N_name << endl;
             }
-                //if noble2 is not dead
             else if (noble2.alive()){
                 cout << "Result: " << "He's dead, " << noble2.get_name() << endl;
             }
-                //both dead
             else {
                 cout << "Result: " << "They're both dead!" << endl;
             }
         }
     }
 
+    double calculateTotalHealth() const {
+        double total_health = 0;
+        for (const auto& warrior : army) {
+            total_health += warrior->get_strength();
+        }
+        return total_health;
+    }
+
+    void defeat() {
+        for (auto& warrior : army) {
+            warrior->clear_strength();
+        }
+        N_live = false;
+    }
+
+
 private:
     string N_name;
     double N_strength;
     bool N_live;
     vector<Warrior*> army;
-};
-
-class Warrior{
-
-    friend ostream& operator << (ostream& os, const Warrior& rhs){
-        //os passed by noble class os
-        os << "       "<< rhs.W_name << ": " << rhs.W_strength << endl;
-        return os;
-    }
-
-public:
-    Warrior(const string& inp_name, double inp_strength):
-    W_name(inp_name), W_strength(inp_strength), W_hire(false){}
-    const string& get_name() const {
-        return W_name;
-    }
-    double get_strength() const{
-        return W_strength;
-    }
-    bool hired() const {
-        return W_hire;
-    }
-    void set_hire(){
-        //Change the hire status of warrior
-        W_hire = !W_hire;
-    }
-    void set_strength(double ratio){
-        //Change the warrior's strength by ratio
-        W_strength *= ratio;
-    }
-    void setEmployer(Noble* employer) {
-        this->employer = employer;
-    }
-
-    Noble* getEmployer() const {
-        return employer;
-    }
-    static bool checkNameConflict(const string& name, const vector<Warrior*>& warriors) {
-        for (const auto& warrior : warriors) {
-            if (warrior->get_name() == name) {
-
-                return true;
-            }
-        }
-        return false;
-    }
-private:
-    string W_name;
-    double W_strength;
-    bool W_hire;
-    Noble* employer;
 };
 
 size_t N_idx(const vector<Noble*>& noble, const string& name){
@@ -230,10 +365,203 @@ void N_add(vector<Noble*>& nobles, const string& name){
 
 void W_add(vector<Warrior*>& warriors, const string& name, int strength){
     //add new warrior
-    if (!Warrior::checkNameConflict(name, warriors)) {
+    if (!Warrior::checkNameConflict(name, warriors)&&(strength != 0)) {
         warriors.emplace_back(new Warrior(name, strength));
         cout << "Warrior " + name + " Created"<< endl;
-    } else {
+    }
+    else if(strength == 0){
+        cerr<< "Please Enter a Valid Health"<<endl;
+    }
+    else {
         cerr << "The warrior cannot be added - name conflict!\n";
     }
+}
+
+bool W_hire(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& n_name, const string& w_name){
+    //check if hire warriors can be done
+    if(N_idx(nobles, n_name)<nobles.size() && W_index(warriors, w_name) < warriors.size()){
+        size_t nob_idx = N_idx(nobles, n_name);
+        size_t war_idx = W_index(warriors, w_name);
+        if (!warriors[war_idx]->hired()) {
+            //check if the warrior is already hired
+            if (nobles[nob_idx]->alive()){
+                nobles[nob_idx]->hire(*warriors[war_idx]);
+                cout<< n_name + " successfully hired " + w_name << endl;
+                return true;}
+            else{
+                cerr << n_name + " is no longer alive" << endl;
+            }
+        }
+        else{
+            cerr << "Attempt to hire " << w_name << " by "<< n_name<<" failed!" << endl;
+            return false;
+        }
+    }
+    else if(N_idx(nobles, n_name)<nobles.size()){
+        //check if the warrior exist
+        cerr << "Attempting to hire using unknown warrior: "<< w_name << endl;
+        return false;
+    }
+    else{
+        //check if the noble exist
+        cerr << "Attempting to hire using unknown noble: "<< n_name << endl;
+        return false;
+    }
+}
+
+bool W_fire(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& n_name, const string& w_name){
+    //check if fire can be done
+    if(N_idx(nobles, n_name)<nobles.size() && W_index(warriors, w_name) < warriors.size()){
+        size_t nob_idx = N_idx(nobles, n_name);
+        size_t war_idx = W_index(warriors, w_name);
+        nobles[nob_idx] -> fire(*warriors[war_idx]);
+        return true;
+    }
+    else if(N_idx(nobles, n_name)<nobles.size()){
+        // noble exist but no warrior
+        cout << "Warrior: " << w_name << " \t\tnot found!"<< endl;
+        return false;
+    }
+    else {
+        // when warrior exist but noble doesn't
+        cout << "Noble: " << n_name << " \t\tnot found!"<< endl;
+        return false;
+    }
+}
+
+void N_battle(vector<Noble*>& nobles, const string& name1, const string& name2){
+    //check if the battle can be done
+    if(N_idx(nobles, name1)<nobles.size() && N_idx(nobles, name2)<nobles.size()){
+        // both nobles exist
+        nobles[N_idx(nobles, name1)] -> battle(*nobles[N_idx(nobles, name2)]);
+    }
+    else if(N_idx(nobles, name1)<nobles.size()){
+        //name2 does not exist
+        cout << "Noble " << name2 << " not found!" << endl;
+    }
+    else {
+        // name1 does not exist
+        cout << "Noble " << name1 << " not found!" << endl;
+    }
+}
+
+
+void inspectWarrior(const vector<Warrior*>& warriors, const string& name) {
+    size_t idx = W_index(warriors, name);
+    if (idx != warriors.size()) {
+        Warrior* warrior = warriors[idx];
+        if (!warrior->hired()) {
+            cout << "Warrior: " << warrior->get_name() << ", Strength: " << warrior->get_strength() << endl;
+        } else {
+            cout << "The warrior " << name << " is hired by a noble." << endl;
+        }
+    } else {
+        cout << "The warrior " << name << " does not exist!" << endl;
+    }
+}
+
+void inspectNoble(const vector<Noble*>& nobles, const string& name) {
+    size_t idx = N_idx(nobles, name);
+    if (idx != nobles.size()) {
+        Noble* noble = nobles[idx];
+        cout << *noble;
+    } else {
+        cout << "The noble " << name << " does not exist!" << endl;
+    }
+}
+
+void inspectAll(const vector<Noble*>& nobles, const vector<Warrior*>& warriors) {
+    cout << "Inspecting all Nobles:\n";
+
+    // If there are no nobles, print "NONE"
+    if (nobles.empty()) {
+        cout << "NONE\n";
+    }
+        // Else, print details of each noble
+    else {
+        for (const auto& noble : nobles) {
+            inspectNoble(nobles, noble->get_name());
+        }
+    }
+
+    cout << "\nInspecting all Warriors:\n";
+
+    // If there are no warriors, print "NONE"
+    if (warriors.empty()) {
+        cout << "NONE\n";
+    }
+        // Else, print details of each warrior
+    else {
+        for (const auto& warrior : warriors) {
+            inspectWarrior(warriors, warrior->get_name());
+        }
+    }
+}
+
+void N_trainWarrior(vector<Noble*>& nobles, const string& nobleName, const string& warriorName, const int& health) {
+    //noble train a warrior
+    size_t idx = N_idx(nobles, nobleName);
+    if (idx != nobles.size()) {
+        nobles[idx]->trainWarrior(warriorName,health);
+    } else {
+        cout << "The noble " << nobleName << " does not exist!" << endl;
+    }
+}
+
+void W_trainWarrior(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& trainerName,
+                    const string& traineeName, const int& health) {
+    //warrior train a warrior,
+    size_t trainerIdx = W_index(warriors, trainerName);
+    size_t traineeIdx = W_index(warriors, traineeName);
+
+    if (trainerIdx != warriors.size() && traineeIdx != warriors.size()) {
+        //check if both warrior are hired by the same noble, and then train if yes.
+        Warrior* trainerWarrior = warriors[trainerIdx];
+        Warrior* traineeWarrior = warriors[traineeIdx];
+        if (trainerWarrior->getEmployer() == traineeWarrior->getEmployer()) {
+            traineeWarrior->set_strength(health);
+            cout << "The warrior " << traineeName << " has been trained by " << trainerName << " and their strength is now " << traineeWarrior->get_strength() << "!" << endl;
+        } else {
+            cout << "These warriors are not hired by the same noble!" << endl;
+        }
+    } else {
+        cout << "One or both of these warriors do not exist!" << endl;
+    }
+}
+
+void tradeWarrior(vector<Warrior*>& warriors, vector<Noble*>& nobles, const string& noble_name, const string& old_warrior_name, const string& new_warrior_name){
+    size_t noble_idx = N_idx(nobles, noble_name);
+    if (noble_idx != nobles.size()) {
+        Noble* noble = nobles[noble_idx];
+        size_t new_warrior_idx = W_index(warriors, new_warrior_name);
+
+        // Check if the new warrior is not hired
+        if (!warriors[new_warrior_idx]->hired()){
+            if (noble->fire(*warriors[W_index(warriors, old_warrior_name)])){
+                cout << "Trade was successful!" << endl;
+
+            } else {
+                cout << "The noble " << noble_name << " does not have the warrior " << old_warrior_name << "!" << endl;
+            }
+        } else {
+            cout << "The warrior " << new_warrior_name << " is already hired!" << endl;
+        }
+    } else {
+        cout << "The noble " << noble_name << " does not exist!" << endl;
+    }
+}
+
+void clear(vector<Noble*>& nobles, vector<Warrior*>& warriors){
+    //clear everything in both vector
+    for (size_t i = 0; i < nobles.size(); i++){
+        delete nobles[i];
+    }
+    nobles.clear();
+    for (size_t i = 0; i < warriors.size(); i++){
+        delete warriors[i];
+    }
+    warriors.clear();
+
+    cout<< "All nobles and warriors have been cleared";
+
 }
